@@ -1,4 +1,9 @@
-const { TILE_SIZE, PLAYER_WIDTH, PLAYER_HEIGHT } = require("./constants");
+const {
+	TILE_SIZE,
+	PLAYER_WIDTH,
+	PLAYER_HEIGHT,
+	COIN_SIZE,
+} = require("./constants");
 
 const isOverlap = (rect1, rect2) => {
 	return (
@@ -40,4 +45,17 @@ const isCollidingWithMap = (player, collidables) => {
 	return false;
 };
 
-module.exports = { isCollidingWithMap };
+const isCollidingWithCoin = (player, coin) => {
+	if (
+		isOverlap(
+			getPlayerBoundingBox(player),
+			getBoundingBoxFactory(COIN_SIZE)(coin),
+		)
+	) {
+		return true;
+	}
+
+	return false;
+};
+
+module.exports = { isCollidingWithMap, isCollidingWithCoin };
