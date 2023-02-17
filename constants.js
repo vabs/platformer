@@ -8,7 +8,7 @@ exports.PLAYER_SPEED = 9;
 exports.JUMP_SPEED = -12;
 exports.TILE_SIZE = 32;
 exports.COIN_SIZE = 6;
-exports.END_GAME_SCORE = 3;
+exports.END_GAME_SCORE = 20;
 exports.CONTROLS = {
 	UP: "up",
 	DONW: "down",
