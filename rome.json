@@ -1,0 +1,15 @@
+{
+    "linter": {
+      "enabled": true,
+      "rules": {
+        "recommended": true
+      }
+    },
+    "javascript": {
+        "formatter": {
+            "quoteProperties": "asNeeded",
+            "quoteStyle": "double",
+            "trailingComma": "all"
+        }
+    }
+  }
