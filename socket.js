@@ -45,6 +45,15 @@ const map = [
 	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0],
 ];
 
+// let map = [[]];
+// let gameMap = {};
+
+// const { loadMap } = require("./loadMap");
+// loadMap("default").then((newMap) => {
+// 	map = newMap.grid;
+// 	gameMap = newMap;
+// });
+
 const collidingTiles = [];
 for (let row = 0; row < map.length; row++) {
 	for (let col = 0; col < map[row].length; col++) {
@@ -59,6 +68,7 @@ for (let row = 0; row < map.length; row++) {
 
 function sendMap(socketConnection) {
 	socketConnection.emit("map", map);
+	// socketConnection.emit("map", { map, gameMap });
 }
 
 function connect(server) {

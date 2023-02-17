@@ -22,6 +22,10 @@ let coins = [];
 function drawLeaderboard() {
 	leaderBoardEl.innerHTML = "";
 	const sortedScores = [...players].sort((p1, p2) => p2.score - p1.score);
+	const titleEl = document.createElement("div");
+	titleEl.innerText = "--- SCORES ---" + "\n" + "---------------------";
+
+	leaderBoardEl.append(titleEl);
 	for (const player of sortedScores) {
 		const scoreEl = document.createElement("div");
 		scoreEl.innerText = `${player.name} -- ${player.score}`;
@@ -59,6 +63,15 @@ socket.on("map", (serverMap) => {
 	console.log("map", map);
 });
 
+// const mapImage = new Image();
+// socket.on("map", ({ map: serverMap, gameMap: serverGameMap }) => {
+// 	map = serverMap;
+// 	gameMap = serverGameMap;
+// 	console.log(map);
+// 	mapImage.src = gameMap.tileset.image;
+// 	console.log(gameMap);
+// });
+
 socket.on("players", (serverPlayers) => {
 	players = serverPlayers;
 });
@@ -85,6 +98,18 @@ function update(delta) {
 	socket.emit("controls", controls);
 }
 
+function getTileImageLocation(id) {
+	if (!gameMap.tileset) return { x: 0, y: 0 };
+	const cols = gameMap.tileset.width / TILE_SIZE;
+	const rows = gameMap.tileset.height / TILE_SIZE;
+	const x = ((id - 1) % cols) * TILE_SIZE;
+	const y = parseInt((id - 1) / cols) * TILE_SIZE;
+	return {
+		x,
+		y,
+	};
+}
+
 function draw() {
 	ctx.clearRect(0, 0, width, height);
 
@@ -99,6 +124,23 @@ function draw() {
 	ctx.fillStyle = "#000000";
 	for (let row = 0; row < map.length; row++) {
 		for (let col = 0; col < map[row].length; col++) {
+			const tileType = map[row][col];
+
+			// if (tileType !== 0) {
+			// 	const { x, y } = getTileImageLocation(tileType);
+			// 	ctx.drawImage(
+			// 		mapImage,
+			// 		x,
+			// 		y,
+			// 		TILE_SIZE,
+			// 		TILE_SIZE,
+			// 		col * TILE_SIZE - cx,
+			// 		row * TILE_SIZE - cy,
+			// 		TILE_SIZE,
+			// 		TILE_SIZE,
+			// 	);
+			// }
+
 			if (map[row][col] === 1) {
 				ctx.fillRect(
 					col * TILE_SIZE - cx,
