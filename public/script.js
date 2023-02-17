@@ -91,10 +91,10 @@ function draw() {
 	const currentPlayer = players.find((player) => player.id === socket.id);
 	let cx = 0;
 	let cy = 0;
-	// if (currentPlayer) {
-	// 	cx = currentPlayer.x - canvas.width / 2 + 251;
-	// 	cy = currentPlayer.y - canvas.height / 2;
-	// }
+	if (currentPlayer) {
+		cx = currentPlayer.x - canvas.width / 2 + 251;
+		cy = currentPlayer.y - canvas.height / 2;
+	}
 
 	ctx.fillStyle = "#000000";
 	for (let row = 0; row < map.length; row++) {
@@ -119,10 +119,10 @@ function draw() {
 		if (player.id === socket.id) {
 			ctx.fillStyle = "#ff0000";
 			ctx.fillRect(
-				player.x - cx,
-				player.y - cy,
-				PLAYER_SIZE + 1,
-				PLAYER_SIZE + 1,
+				player.x - cx - 1,
+				player.y - cy - 1,
+				PLAYER_SIZE + 2,
+				PLAYER_SIZE + 2,
 			);
 		}
 

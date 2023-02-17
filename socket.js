@@ -8,6 +8,8 @@ const {
 	PLAYER_SPEED,
 	JUMP_SPEED,
 	END_GAME_SCORE,
+	PLAYER_STARTING_X,
+	PLAYER_STARTING_Y,
 } = require("./constants");
 const randomName = require("random-name");
 
@@ -80,8 +82,8 @@ function connect(server) {
 
 		sendMap(socket);
 		const player = {
-			x: 20,
-			y: 20,
+			x: PLAYER_STARTING_X,
+			y: PLAYER_STARTING_Y,
 			vx: 0,
 			vy: 0,
 			score: 0,
@@ -125,11 +127,12 @@ const spawnCoins = () => {
 const resetGame = () => {
 	for (const player of players) {
 		player.score = 0;
-		player.x = 100;
-		player.y = 100;
+		player.x = PLAYER_STARTING_X;
+		player.y = PLAYER_STARTING_Y;
 		player.vx = 0;
 		player.vy = 0;
 	}
+	coins = [];
 };
 
 const tick = (delta) => {
@@ -137,7 +140,7 @@ const tick = (delta) => {
 		const playerControls = controlsMap[player.id] ?? {};
 
 		for (let i = coins.length - 1; i >= 0; i--) {
-			if (isCollidingWithCoin(player, coins[i])) {
+			if (coins[i] && isCollidingWithCoin(player, coins[i])) {
 				player.score++;
 				coins.splice(i, 1);
 				socketMap[player.id].emit("playCoinSound");
