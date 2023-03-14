@@ -4,7 +4,7 @@ const bgImage = new Image();
 bgImage.src = "../images/bg.png";
 
 const tileImage = new Image();
-tileImage.src = "../images/tileSheet.png";
+tileImage.src = "../images/tilesheet.png";
 
 export function drawBackground(ctx, camera) {
   ctx.drawImage(
