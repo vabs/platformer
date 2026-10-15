@@ -6,18 +6,31 @@ bgImage.src = "../images/bg.png";
 const tileImage = new Image();
 tileImage.src = "../images/tilesheet.png";
 
+// background scrolls 1px for every PARALLAX_FACTOR px the camera moves
+const PARALLAX_FACTOR = 20;
+// extra image kept off-screen on each side so parallax has room to scroll
+const PARALLAX_MARGIN = 80;
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
 export function drawBackground(ctx, camera) {
-  ctx.drawImage(
-    bgImage,
-    0,
-    0,
-    bgImage.width,
-    bgImage.height,
-    0 - camera.cx / 20 - 50,
-    0 - camera.cy / 20 - 50,
-    bgImage.width,
-    bgImage.height
+  if (!bgImage.naturalWidth) return;
+
+  const { width, height } = ctx.canvas;
+  // scale like CSS background-size: cover, plus the parallax margin
+  const scale = Math.max(
+    (width + PARALLAX_MARGIN * 2) / bgImage.naturalWidth,
+    (height + PARALLAX_MARGIN * 2) / bgImage.naturalHeight
   );
+  const drawWidth = bgImage.naturalWidth * scale;
+  const drawHeight = bgImage.naturalHeight * scale;
+  const maxOffsetX = drawWidth - width;
+  const maxOffsetY = drawHeight - height;
+  // clamp so an image edge never scrolls into view
+  const offsetX = clamp(maxOffsetX / 2 + camera.cx / PARALLAX_FACTOR, 0, maxOffsetX);
+  const offsetY = clamp(maxOffsetY / 2 + camera.cy / PARALLAX_FACTOR, 0, maxOffsetY);
+
+  ctx.drawImage(bgImage, -offsetX, -offsetY, drawWidth, drawHeight);
 }
 
 export function drawMap(ctx, map, camera) {

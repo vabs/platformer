@@ -59,9 +59,11 @@ function connect(server) {
     // 	return;
     // }
 
-    ipMap[ipAddress] = true;
+    ipMap[ipAddress] = (ipMap[ipAddress] ?? 0) + 1;
 
     sendMap(socket);
+    // tick() resets the game once a score goes past END_GAME_SCORE
+    socket.emit("settings", { winScore: END_GAME_SCORE + 1 });
     const player = {
       x: PLAYER_STARTING_X,
       y: PLAYER_STARTING_Y,
@@ -79,10 +81,15 @@ function connect(server) {
 
     socket.on("disconnect", () => {
       console.log("a user disconnected");
-      const playerLeft = playerSocketMap[socket.id];
       delete playerSocketMap[socket.id];
+      delete socketMap[socket.id];
+      delete controlsMap[socket.id];
+      delete canJump[socket.id];
+      ipMap[ipAddress]--;
+      if (ipMap[ipAddress] <= 0) {
+        delete ipMap[ipAddress];
+      }
       players = players.filter((player) => player.id !== socket.id);
-      socket.emit("players");
     });
 
     socket.on("controls", (controls) => {
@@ -97,13 +104,12 @@ const isColliding = (player) => {
 };
 
 const spawnCoins = () => {
-  const randomX = Math.floor(Math.random() * map.length);
-  const randomY = Math.floor(Math.random() * map[0].length);
-  if (map[randomX][randomY] === 0) {
-    console.log(randomX, randomY);
+  const row = Math.floor(Math.random() * map.length);
+  const col = Math.floor(Math.random() * map[0].length);
+  if (map[row][col] === 0) {
     coins.push({
-      x: randomX * TILE_SIZE,
-      y: randomY * TILE_SIZE,
+      x: col * TILE_SIZE,
+      y: row * TILE_SIZE,
     });
   }
 };
@@ -120,13 +126,18 @@ const spawnSpecialCoins = () => {
   }
 };
 
+const respawnPlayer = (player) => {
+  player.x = PLAYER_STARTING_X;
+  player.y = PLAYER_STARTING_Y;
+  player.vx = 0;
+  player.vy = 0;
+  canJump[player.id] = false;
+};
+
 const resetGame = () => {
   for (const player of players) {
     player.score = 0;
-    player.x = PLAYER_STARTING_X;
-    player.y = PLAYER_STARTING_Y;
-    player.vx = 0;
-    player.vy = 0;
+    respawnPlayer(player);
   }
   coins = [];
 };
@@ -177,9 +188,7 @@ const tick = (delta) => {
     }
 
     if (player.y > map.length * TILE_SIZE * 2) {
-      player.x = 20;
-      player.y = 20;
-      player.vy = 0;
+      respawnPlayer(player);
       player.score = 0;
     }
   }
