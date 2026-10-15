@@ -1,23 +1,27 @@
 import { drawPlayer } from "./player.js";
+import { renderLeaderboard, setWinScore } from "./leaderboard.js";
 
 // import { io } from "socket.io-client";
 
 var socket = io();
 let canvas = document.getElementById("canvas");
-const leaderBoardEl = document.getElementById("leaderboard");
-const height = window.innerHeight;
-const width = window.innerWidth;
-canvas.height = height;
-canvas.width = width;
 const ctx = canvas.getContext("2d");
-ctx.fillStyle = "red";
 let lastRender = 0;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 import {
   TILE_SIZE,
   SPECIAL_COIN_SIZE,
   COIN_SIZE,
   COIN_IMG_SIZE,
+  PLAYER_WIDTH,
+  PLAYER_HEIGHT,
 } from "./constants.js";
 import { drawBackground, drawMap } from "./map.js";
 
@@ -39,25 +43,6 @@ let players = [];
 let coins = [];
 let projectiles = [];
 let specialStar = {};
-
-function drawLeaderboard() {
-  leaderBoardEl.innerHTML = "";
-  const sortedScores = [...players].sort((p1, p2) => p2.score - p1.score);
-  const titleEl = document.createElement("div");
-  titleEl.innerText = "--- SCORES ---" + "\n" + "---------------------";
-
-  leaderBoardEl.append(titleEl);
-  for (const player of sortedScores) {
-    const scoreEl = document.createElement("div");
-    scoreEl.innerText = `${player.name} -- ${player.score}`;
-    leaderBoardEl.append(scoreEl);
-  }
-}
-
-setInterval(() => {
-  drawLeaderboard();
-}, 2000);
-drawLeaderboard();
 
 const controls = {
   down: false,
@@ -93,8 +78,13 @@ socket.on("map", (serverMap) => {
 // 	console.log(gameMap);
 // });
 
+socket.on("settings", (settings) => {
+  setWinScore(settings.winScore);
+});
+
 socket.on("players", (serverPlayers) => {
   players = serverPlayers;
+  renderLeaderboard(players, socket.id);
 });
 
 socket.on("coins", (serverCoins) => {
@@ -158,14 +148,14 @@ function strokeStar(x, y, r, n, inset) {
 }
 
 function draw() {
-  ctx.clearRect(0, 0, width, height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const currentPlayer = players.find((player) => player.id === socket.id);
   let cx = 0;
   let cy = 0;
   if (currentPlayer) {
-    cx = currentPlayer.x - canvas.width / 2 + 251;
-    cy = currentPlayer.y - canvas.height / 2;
+    cx = currentPlayer.x + PLAYER_WIDTH / 2 - canvas.width / 2;
+    cy = currentPlayer.y + PLAYER_HEIGHT / 2 - canvas.height / 2;
   }
 
   drawBackground(ctx, { cx, cy });
@@ -183,15 +173,14 @@ function draw() {
   }
 
   for (let player of players) {
-    if (player.id === socket.id) {
-      ctx.fillStyle = "#ff0000";
+    if (player.id !== socket.id) {
       drawPlayer(ctx, player, { cx, cy })(leftImage, rightImage);
     }
+  }
 
-    // ctx.fillStyle = player.color;
-    // ctx.fillRect(player.x - cx, player.y - cy, PLAYER_SIZE, PLAYER_SIZE);
-    // ctx.fillStyle = "#000000";
-    // ctx.fillText(player.name, player.x - 10 - cx, player.y - 10 - cy);
+  // draw current player last so it stays on top of others
+  if (currentPlayer) {
+    drawPlayer(ctx, currentPlayer, { cx, cy }, true)(leftImage, rightImage);
   }
 }
 
@@ -202,8 +191,8 @@ function drawCoin(ctx, coin, camera) {
     0,
     COIN_IMG_SIZE,
     COIN_IMG_SIZE,
-    coin.y - camera.cx,
-    coin.x - camera.cy,
+    coin.x - camera.cx,
+    coin.y - camera.cy,
     COIN_SIZE,
     COIN_SIZE
   );
